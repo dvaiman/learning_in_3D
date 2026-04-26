@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Difficulty, time, and learning: a three-dimensional framework</title>
+  <meta name="description" content="An interactive 3D visualisation of the relationship between difficulty, time, effort, and learning. A discussion tool for educators and researchers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">A three-dimensional framework</p>
+      <h1>Difficulty, time, and learning</h1>
+      <p class="subtitle">
+        An interactive model that integrates the <em>challenge point framework</em>,
+        <em>desirable difficulties</em>, and <em>cognitive load theory</em> &mdash; with
+        attention to the role of effort and AI-mediated practice.
+      </p>
+      <p class="intro">
+        The figure below is a discussion tool, not an exact model. It is meant to make
+        explicit the trade-offs between how long we practise, how hard the practice is,
+        and how much durable learning results. Rotate the plot, toggle the trajectories,
+        and read the corresponding theory cards underneath.
+      </p>
+    </header>
+
+    <section class="plot-section" aria-label="Interactive 3D plot">
+      <div id="plot" role="img" aria-label="3D plot of difficulty, time, and learning with four trajectories and an optimal-zone surface."></div>
+
+      <div class="controls" role="group" aria-label="Toggle trajectories">
+        <button type="button" class="toggle" data-trace="A" aria-pressed="true">
+          <span class="swatch" style="background:#1D9E75"></span>
+          Spaced + progressive difficulty
+        </button>
+        <button type="button" class="toggle" data-trace="B" aria-pressed="true">
+          <span class="swatch" style="background:#378ADD"></span>
+          Massed practice, low difficulty
+        </button>
+        <button type="button" class="toggle" data-trace="C" aria-pressed="true">
+          <span class="swatch" style="background:#D85A30"></span>
+          Too hard, too fast
+        </button>
+        <button type="button" class="toggle" data-trace="D" aria-pressed="true">
+          <span class="swatch swatch-dashed" style="background:#D4537E"></span>
+          AI-offloaded
+        </button>
+        <button type="button" class="toggle toggle-surface" data-trace="S" aria-pressed="true">
+          <span class="swatch swatch-surface"></span>
+          Optimal-zone surface
+        </button>
+      </div>
+
+      <div class="trajectory-detail" id="trajectoryDetail" aria-live="polite">
+        <p class="hint">Click a trajectory above to read the underlying theory. Click again to hide it.</p>
+      </div>
+    </section>
+
+    <section class="theory" aria-label="Theoretical foundations">
+      <h2>Theoretical foundations</h2>
+      <p class="section-lede">
+        Six strands of learning science underpin the model. Each card connects a theory to
+        a specific feature of the plot.
+      </p>
+
+      <div class="cards">
+        <article class="card" style="--accent:#1D9E75">
+          <header>
+            <span class="card-tag">Surface</span>
+            <h3>Challenge point framework</h3>
+            <p class="source">Guadagnoli &amp; Lee (2004)</p>
+          </header>
+          <p>
+            The optimal surface in the plot. The level of difficulty that maximises
+            learning depends on the learner's current skill. As skill grows over time,
+            the optimal difficulty must rise to maintain a productive challenge.
+          </p>
+          <blockquote>
+            &ldquo;Practising a skill does not necessarily guarantee skill learning.&rdquo;
+            The right level of <em>functional</em> difficulty is required.
+          </blockquote>
+        </article>
+
+        <article class="card" style="--accent:#1D9E75">
+          <header>
+            <span class="card-tag">Trajectory A</span>
+            <h3>Desirable difficulties</h3>
+            <p class="source">Bjork (1994); Bjork &amp; Bjork (2011)</p>
+          </header>
+          <p>
+            Four strategies that make learning harder in the moment yet better in the long
+            run: spacing, interleaving, retrieval practice, and generation. They tend to
+            feel inefficient while practising but produce stronger retention and transfer.
+          </p>
+          <blockquote>
+            What feels slow and effortful during learning is often what produces durable
+            learning &mdash; a counter-intuitive principle.
+          </blockquote>
+        </article>
+
+        <article class="card" style="--accent:#378ADD">
+          <header>
+            <span class="card-tag">Time axis</span>
+            <h3>Spacing effect</h3>
+            <p class="source">Bjork &amp; Allen (1970); Cepeda et al. (2006); Murphy, Bjork &amp; Bjork (2023)</p>
+          </header>
+          <p>
+            Distributed practice yields markedly better retention than massed practice.
+            Murphy and colleagues showed that even within a fixed amount of study time,
+            short repeated exposures outperform long single sessions.
+          </p>
+          <blockquote>
+            Time is not only a quantity; it has a qualitative dimension. <em>How</em>
+            time is distributed matters as much as <em>how much</em> time is spent.
+          </blockquote>
+        </article>
+
+        <article class="card" style="--accent:#D85A30">
+          <header>
+            <span class="card-tag">Trajectory C</span>
+            <h3>Cognitive load theory</h3>
+            <p class="source">Sweller (1988); Sweller, van Merri&euml;nboer &amp; Paas (1998)</p>
+          </header>
+          <p>
+            When the total cognitive load &mdash; intrinsic, extraneous, and germane &mdash;
+            exceeds working-memory capacity, learning collapses. In the plot this appears
+            as the orange trajectory: difficulty too high, too fast, with the learning
+            curve bending downward.
+          </p>
+          <blockquote>
+            Beyond a certain point, difficulty stops being &ldquo;desirable&rdquo; and
+            becomes overwhelming.
+          </blockquote>
+        </article>
+
+        <article class="card" style="--accent:#D4537E">
+          <header>
+            <span class="card-tag">Trajectory D</span>
+            <h3>Cognitive offloading &amp; the fluency illusion</h3>
+            <p class="source">Gerlich (2025); Bastani et al. (PNAS); Bjork &amp; Bjork (2011)</p>
+          </header>
+          <p>
+            AI tools reduce the cognitive effort of a task, which can produce an
+            experience of efficient learning without the deep processing that supports
+            retention. Bastani et al. found that students practising with AI performed
+            48% better during practice but 17% worse without it &mdash; a classic
+            fluency illusion.
+          </p>
+          <blockquote>
+            The very tool that <em>could</em> calibrate difficulty is instead used to
+            <em>eliminate</em> it.
+          </blockquote>
+        </article>
+
+        <article class="card" style="--accent:#1D9E75">
+          <header>
+            <span class="card-tag">Optimal band</span>
+            <h3>Zone of proximal development</h3>
+            <p class="source">Vygotsky (1978)</p>
+          </header>
+          <p>
+            Converges with the challenge point framework: optimal learning takes place
+            just beyond what the student can do alone. In the plot this corresponds to
+            the narrow band around the optimal surface.
+          </p>
+          <blockquote>
+            AI can act as the &ldquo;more knowledgeable other&rdquo; Vygotsky described
+            &mdash; but only if it calibrates support rather than taking over the task.
+          </blockquote>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <p>Created as a discussion tool for educators. Based on published learning science.</p>
+      <details>
+        <summary>References</summary>
+        <ul class="refs">
+          <li>Bastani, H., Bastani, O., Sungu, A., Ge, H., Kabakc&#305;, &Ouml;., &amp; Mariman, R. Generative AI can harm learning. <em>PNAS</em>.</li>
+          <li>Bjork, R. A. (1994). Memory and metamemory considerations in the training of human beings. In J. Metcalfe &amp; A. Shimamura (Eds.), <em>Metacognition: Knowing about knowing</em>. MIT Press.</li>
+          <li>Bjork, E. L., &amp; Bjork, R. A. (2011). Making things hard on yourself, but in a good way: creating desirable difficulties to enhance learning. In M. A. Gernsbacher et al. (Eds.), <em>Psychology and the real world</em>. Worth.</li>
+          <li>Bjork, R. A., &amp; Allen, T. W. (1970). The spacing effect: consolidation or differential encoding? <em>Journal of Verbal Learning and Verbal Behavior</em>, 9(5), 567&ndash;572.</li>
+          <li>Cepeda, N. J., Pashler, H., Vul, E., Wixted, J. T., &amp; Rohrer, D. (2006). Distributed practice in verbal recall tasks: a review and quantitative synthesis. <em>Psychological Bulletin</em>, 132(3), 354&ndash;380.</li>
+          <li>Gerlich, M. (2025). AI and cognitive offloading.</li>
+          <li>Guadagnoli, M. A., &amp; Lee, T. D. (2004). Challenge point: a framework for conceptualizing the effects of various practice conditions in motor learning. <em>Journal of Motor Behavior</em>, 36(2), 212&ndash;224.</li>
+          <li>Murphy, D. H., Bjork, E. L., &amp; Bjork, R. A. (2023). Spacing within study sessions also benefits retention. <em>Memory &amp; Cognition</em>.</li>
+          <li>Sweller, J. (1988). Cognitive load during problem solving: effects on learning. <em>Cognitive Science</em>, 12(2), 257&ndash;285.</li>
+          <li>Sweller, J., van Merri&euml;nboer, J. J. G., &amp; Paas, F. G. W. C. (1998). Cognitive architecture and instructional design. <em>Educational Psychology Review</em>, 10(3), 251&ndash;296.</li>
+          <li>Vygotsky, L. S. (1978). <em>Mind in society: the development of higher psychological processes</em>. Harvard University Press.</li>
+        </ul>
+      </details>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
