@@ -226,10 +226,12 @@
   const effortA = tA.map(t => 0.62 + 0.08 * (1 - Math.exp(-0.5 * t)));     // 0.62 → 0.70
   // B (massed): consistently low effort — easy repetition, no retrieval demand.
   const effortB = dB.map(d => 0.6 * d);                                    // ~0.09–0.12
-  // C (too hard): maximum effort throughout — cognitive overload means the
-  //   learner is straining at capacity the whole time, which is why learning
-  //   collapses despite the effort. Sits above A's range at every point.
-  const effortC = tC.map(t => 0.95 - 0.07 * (1 - Math.exp(-0.4 * t)));     // 0.95 → 0.88
+  // C (too hard): the learner ramps up effort trying to keep up (rightward
+  //   climb), reaches peak strain, then collapses — effort drops as the
+  //   learner runs out of capacity, and learning falls with it. The (effort,
+  //   learning) trajectory becomes an arc: up-right, then down-left. Stays
+  //   above green's effort range at every point.
+  const effortC = tC.map(t => 0.78 + 0.18 * (1 - Math.exp(-1.0 * t)) - 0.10 * Math.pow(Math.max(0, t - 2), 2));
   // D (AI-offloaded): near-zero throughout — AI removes the cognitive work.
   const effortD = tD.map(t => 0.04 + 0.02 * t);                            // 0.04–0.10
 
