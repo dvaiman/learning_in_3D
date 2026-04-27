@@ -248,15 +248,20 @@
   }
 
   function buildEffortTraces() {
+    const ht = '%{x:.2f}<br>Learning: %{y:.2f}<extra></extra>';
     return [
       { type: 'scatter', mode: 'lines+markers', name: 'Spaced + progressive',
-        x: effortA, y: lA, line: { color: COLORS.A, width: 3 }, marker: { size: 5, color: COLORS.A } },
+        x: effortA, y: lA, line: { color: COLORS.A, width: 3 }, marker: { size: 5, color: COLORS.A },
+        hovertemplate: 'Effort: ' + ht },
       { type: 'scatter', mode: 'lines+markers', name: 'Massed, low difficulty',
-        x: effortB, y: lB, line: { color: COLORS.B, width: 3 }, marker: { size: 5, color: COLORS.B } },
+        x: effortB, y: lB, line: { color: COLORS.B, width: 3 }, marker: { size: 5, color: COLORS.B },
+        hovertemplate: 'Effort: ' + ht },
       { type: 'scatter', mode: 'lines+markers', name: 'Too hard, too fast',
-        x: effortC, y: lC, line: { color: COLORS.C, width: 3 }, marker: { size: 5, color: COLORS.C } },
+        x: effortC, y: lC, line: { color: COLORS.C, width: 3 }, marker: { size: 5, color: COLORS.C },
+        hovertemplate: 'Effort: ' + ht },
       { type: 'scatter', mode: 'lines+markers', name: 'AI-offloaded',
-        x: effortD, y: lD, line: { color: COLORS.D, width: 3, dash: 'dash' }, marker: { size: 5, color: COLORS.D, symbol: 'diamond' } }
+        x: effortD, y: lD, line: { color: COLORS.D, width: 3, dash: 'dash' }, marker: { size: 5, color: COLORS.D, symbol: 'diamond' },
+        hovertemplate: 'Effort: ' + ht }
     ];
   }
 
@@ -267,47 +272,62 @@
   // ---------- Companion plot 2: practice vs transfer ----------
   const transferPlotEl = document.getElementById('transferPlot');
 
-  const conditions = ['Spaced + progressive', 'Massed, low difficulty', 'Too hard, too fast', 'AI-offloaded'];
-  const practiceScores = [78, 62, 55, 95];   // illustrative; AI condition strongest in practice
-  const transferScores = [82, 50, 38, 55];   // and weakest off-task
-  const conditionColors = [COLORS.A, COLORS.B, COLORS.C, COLORS.D];
+  // Horizontal grouped bar: conditions on y-axis, score on x-axis — avoids label collision
+  const conditions = ['AI-offloaded', 'Too hard, too fast', 'Massed, low difficulty', 'Spaced + progressive'];
+  const practiceScores = [95, 55, 62, 78];
+  const transferScores = [55, 38, 50, 82];
+  const conditionColors = [COLORS.D, COLORS.C, COLORS.B, COLORS.A];
 
   function buildTransferLayout() {
     const c = plotColors();
     return {
       autosize: true,
       barmode: 'group',
-      bargap: 0.25,
-      bargroupgap: 0.12,
-      margin: { l: 56, r: 18, t: 12, b: 78 },
+      bargap: 0.22,
+      bargroupgap: 0.08,
+      margin: { l: 170, r: 24, t: 8, b: 48 },
       paper_bgcolor: c.bg,
       plot_bgcolor: c.bg,
       font: { family: 'Inter, sans-serif', color: c.text, size: 12 },
-      legend: { orientation: 'h', y: -0.28, x: 0, font: { color: c.muted } },
+      legend: {
+        orientation: 'h', y: -0.18, x: 0,
+        font: { color: c.muted, size: 12 },
+        traceorder: 'normal'
+      },
       xaxis: {
-        tickfont: { color: c.muted, size: 11 },
-        gridcolor: c.bg, linecolor: c.zero,
-        tickangle: 0
+        title: 'Score (illustrative, 0–100)',
+        range: [0, 105],
+        gridcolor: c.grid, zerolinecolor: c.zero, linecolor: c.zero,
+        tickfont: { color: c.muted }, titlefont: { color: c.text, size: 12 }
       },
       yaxis: {
-        title: 'Score (illustrative)',
-        range: [0, 100], gridcolor: c.grid, zerolinecolor: c.zero, linecolor: c.zero,
-        tickfont: { color: c.muted }, titlefont: { color: c.text, size: 12 }
+        tickfont: { color: c.muted, size: 12 },
+        gridcolor: c.bg, linecolor: c.zero,
+        automargin: true
       }
     };
   }
 
   function buildTransferTraces() {
+    const ht = '%{x}<br>%{fullData.name}<extra></extra>';
     return [
       {
-        type: 'bar', name: 'During practice',
-        x: conditions, y: practiceScores,
-        marker: { color: conditionColors, opacity: 1 }
+        type: 'bar', orientation: 'h',
+        name: 'During practice',
+        y: conditions, x: practiceScores,
+        marker: { color: conditionColors },
+        hovertemplate: 'Score: %{x}<br>%{fullData.name}<extra></extra>'
       },
       {
-        type: 'bar', name: 'Transfer test (without AI)',
-        x: conditions, y: transferScores,
-        marker: { color: conditionColors, opacity: 0.45, line: { color: conditionColors, width: 2 } }
+        type: 'bar', orientation: 'h',
+        name: 'Transfer test (no AI)',
+        y: conditions, x: transferScores,
+        marker: {
+          color: conditionColors,
+          opacity: 0.4,
+          line: { color: conditionColors, width: 2 }
+        },
+        hovertemplate: 'Score: %{x}<br>%{fullData.name}<extra></extra>'
       }
     ];
   }
