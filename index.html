@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 </head>
 <body>
@@ -74,9 +74,13 @@
             <h3>Effort &times; learning</h3>
             <p class="companion-sub">
               Each trajectory plotted as effort expended against learning gained.
-              The AI-offloaded curve sits on the far left: the lowest effort, and
-              correspondingly low learning. Spaced + progressive practice covers
-              the largest range of effort and reaches the highest learning.
+              <em>Spaced + progressive</em> sits at high effort throughout
+              &mdash; desirable difficulties keep every session genuinely
+              effortful &mdash; and learning accumulates on top. <em>AI-offloaded</em>
+              clusters at the far left: near-zero effort, low learning.
+              <em>Massed</em> stays at low effort with limited learning.
+              <em>Too hard</em> starts effortful then collapses as the learner
+              disengages.
             </p>
           </header>
           <div id="effortPlot" class="small-plot" role="img" aria-label="2D plot of effort versus learning for the four trajectories."></div>
@@ -240,6 +244,6 @@
     </footer>
   </main>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

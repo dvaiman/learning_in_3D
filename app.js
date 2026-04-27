@@ -219,11 +219,16 @@
   // ---------- Companion plot 1: effort × learning ----------
   const effortPlotEl = document.getElementById('effortPlot');
 
-  // Effort proxy per trajectory: how much cognitive work the learner expends.
-  const effortA = dA.map(d => d);                                      // full effort matches functional difficulty
-  const effortB = dB.map(d => 0.6 * d);                                // diluted, time-passing
-  const effortC = dC.map((d, i) => d * Math.max(0.3, 1 - 0.3 * Math.max(0, tC[i] - 2))); // disengages
-  const effortD = tD.map(t => 0.05 + 0.02 * t);                        // AI removes effort
+  // Effort proxies — what the learner actually expends cognitively at each point.
+  // A (spaced): high effort throughout — desirable difficulties mean every session
+  //   requires genuine retrieval under forgetting. Effort starts high and stays high.
+  const effortA = tA.map(t => 0.62 + 0.18 * (1 - Math.exp(-0.5 * t)));  // 0.62 → 0.80
+  // B (massed): consistently low effort — easy repetition, no retrieval demand.
+  const effortB = dB.map(d => 0.6 * d);                                    // ~0.09–0.12
+  // C (too hard): high effort early (struggling), collapses as learner disengages.
+  const effortC = dC.map((d, i) => d * Math.max(0.25, 1 - 0.35 * Math.max(0, tC[i] - 1.8)));
+  // D (AI-offloaded): near-zero throughout — AI removes the cognitive work.
+  const effortD = tD.map(t => 0.04 + 0.02 * t);                           // 0.04–0.10
 
   function buildEffortLayout() {
     const c = plotColors();
@@ -297,7 +302,7 @@
       legend: {
         orientation: 'h', y: -0.18, x: 0,
         font: { color: c.muted, size: 12 },
-        traceorder: 'normal'
+        traceorder: 'reversed'
       },
       xaxis: {
         title: 'Score (illustrative, 0–100)',
@@ -314,24 +319,34 @@
   }
 
   function buildTransferTraces() {
-    const ht = '%{x}<br>%{fullData.name}<extra></extra>';
+    // Order matters: in horizontal grouped bars the LAST trace renders at the
+    // top of each group. Putting "During practice" last places the solid bar
+    // above the faded one. The hatch pattern on the transfer bars makes the
+    // legend distinguishable beyond opacity alone.
     return [
-      {
-        type: 'bar', orientation: 'h',
-        name: 'During practice',
-        y: conditions, x: practiceScores,
-        marker: { color: conditionColors },
-        hovertemplate: 'Score: %{x}<br>%{fullData.name}<extra></extra>'
-      },
       {
         type: 'bar', orientation: 'h',
         name: 'Transfer test (no AI)',
         y: conditions, x: transferScores,
         marker: {
           color: conditionColors,
-          opacity: 0.4,
-          line: { color: conditionColors, width: 2 }
+          opacity: 0.55,
+          line: { color: conditionColors, width: 1.5 },
+          pattern: {
+            shape: '/',
+            size: 6,
+            solidity: 0.35,
+            fgcolor: '#ffffff',
+            fgopacity: 0.6
+          }
         },
+        hovertemplate: 'Score: %{x}<br>%{fullData.name}<extra></extra>'
+      },
+      {
+        type: 'bar', orientation: 'h',
+        name: 'During practice',
+        y: conditions, x: practiceScores,
+        marker: { color: conditionColors },
         hovertemplate: 'Score: %{x}<br>%{fullData.name}<extra></extra>'
       }
     ];
