@@ -13,7 +13,7 @@
     B: '#378ADD',
     C: '#D85A30',
     D: '#D4537E',
-    surface: '#1D9E75'
+    ridge: '#1D9E75'
   };
 
   // Trajectory A: spaced + progressive difficulty
@@ -34,49 +34,51 @@
   const dC = tC.map(t => 0.3 + 0.65 * (1 - Math.exp(-1.2 * t)));
   const lC = tC.map(t => Math.max(0, 0.35 * (1 - Math.exp(-0.8 * t)) - 0.08 * Math.pow(Math.max(0, t - 2), 2)));
 
-  // Trajectory D: AI-offloaded
-  const nD = 40;
-  const tD = linspace(0, 10, nD);
-  const dD = tD.map(t => 0.05 + 0.1 * (1 - Math.exp(-0.5 * t)));
-  const lD = tD.map(t => 0.38 * (1 - Math.exp(-0.6 * t)));
+  // Trajectory D: AI-offloaded — task completes fast (short time on x), low effort, low learning
+  const nD = 18;
+  const tD = linspace(0, 3, nD);
+  const dD = tD.map(t => 0.05 + 0.1 * (1 - Math.exp(-0.7 * t)));
+  const lD = tD.map(t => 0.32 * (1 - Math.exp(-0.7 * t)));
 
-  // Optimal-zone surface (challenge point prediction)
-  const sN = 36;
-  const sT = linspace(0, 10, sN);
-  const sD = linspace(0, 1, sN);
-  const sL = [];
-  for (let j = 0; j < sN; j++) {
-    const row = [];
-    for (let i = 0; i < sN; i++) {
-      const t = sT[i];
-      const d = sD[j];
-      const peak = 0.4 + 0.2 * Math.min(1, t / 5);
-      const w = 0.25 + 0.1 * Math.min(1, t / 8);
-      const l = 0.95 * Math.exp(-Math.pow(d - peak, 2) / (2 * w * w)) * (1 - Math.exp(-0.3 * t));
-      row.push(l);
-    }
-    sL.push(row);
-  }
+  // Optimal-challenge ridge (replaces the surface).
+  // Difficulty at the optimum rises with time/skill (no ceiling); learning saturates.
+  const ridgeN = 60;
+  const tR = linspace(0, 10, ridgeN);
+  const peakD = (t) => 0.25 + 0.06 * t;        // 0.25 → 0.85 over 0..10
+  const optL  = (t) => 0.96 * (1 - Math.exp(-0.32 * t));
+  const wT    = (t) => 0.10 + 0.005 * t;       // tolerance widens slightly with skill
+
+  const dRidge = tR.map(peakD);
+  const lRidge = tR.map(optL);
+  const dRidgeUp = tR.map(t => Math.min(0.98, peakD(t) + wT(t)));
+  const dRidgeDn = tR.map(t => Math.max(0.02, peakD(t) - wT(t)));
+  // Edges sit one std-dev off the peak → learning is e^(-0.5) ≈ 0.61 of the optimum
+  const lEdge = tR.map(t => 0.61 * optL(t));
 
   function isDark() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
-  function buildLayout() {
+  function plotColors() {
     const dark = isDark();
-    const text = dark ? '#ececea' : '#1c1d1f';
-    const muted = dark ? '#a4a8b1' : '#5a5d63';
-    const grid = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-    const zero = dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
-    const bg = 'rgba(0,0,0,0)';
+    return {
+      text: dark ? '#ececea' : '#1c1d1f',
+      muted: dark ? '#a4a8b1' : '#5a5d63',
+      grid: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+      zero: dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)',
+      bg: 'rgba(0,0,0,0)'
+    };
+  }
 
+  function build3DLayout() {
+    const c = plotColors();
     const axisCommon = {
-      gridcolor: grid,
-      zerolinecolor: zero,
-      linecolor: zero,
-      tickfont: { color: muted, family: 'Inter, sans-serif', size: 11 },
-      titlefont: { color: text, family: 'Inter, sans-serif', size: 13 },
-      backgroundcolor: bg,
+      gridcolor: c.grid,
+      zerolinecolor: c.zero,
+      linecolor: c.zero,
+      tickfont: { color: c.muted, family: 'Inter, sans-serif', size: 11 },
+      titlefont: { color: c.text, family: 'Inter, sans-serif', size: 13 },
+      backgroundcolor: c.bg,
       showbackground: false,
       range: [0, 1]
     };
@@ -84,10 +86,10 @@
     return {
       autosize: true,
       margin: { l: 0, r: 0, b: 0, t: 0 },
-      paper_bgcolor: bg,
-      plot_bgcolor: bg,
+      paper_bgcolor: c.bg,
+      plot_bgcolor: c.bg,
       showlegend: false,
-      font: { family: 'Inter, sans-serif', color: text },
+      font: { family: 'Inter, sans-serif', color: c.text },
       scene: {
         camera: { eye: { x: 1.5, y: -1.7, z: 0.9 } },
         aspectmode: 'cube',
@@ -107,17 +109,9 @@
     };
   }
 
-  function buildTraces() {
-    const surfaceColorscale = [
-      [0, 'rgba(29,158,117,0.02)'],
-      [0.4, 'rgba(29,158,117,0.18)'],
-      [0.8, 'rgba(29,158,117,0.45)'],
-      [1, 'rgba(29,158,117,0.65)']
-    ];
-
+  function build3DTraces() {
     const traceA = {
-      type: 'scatter3d',
-      mode: 'lines+markers',
+      type: 'scatter3d', mode: 'lines+markers',
       name: 'Spaced + progressive difficulty',
       x: tA, y: dA, z: lA,
       line: { color: COLORS.A, width: 6 },
@@ -126,8 +120,7 @@
     };
 
     const traceB = {
-      type: 'scatter3d',
-      mode: 'lines+markers',
+      type: 'scatter3d', mode: 'lines+markers',
       name: 'Massed practice, low difficulty',
       x: tB, y: dB, z: lB,
       line: { color: COLORS.B, width: 6 },
@@ -136,8 +129,7 @@
     };
 
     const traceC = {
-      type: 'scatter3d',
-      mode: 'lines+markers',
+      type: 'scatter3d', mode: 'lines+markers',
       name: 'Too hard, too fast',
       x: tC, y: dC, z: lC,
       line: { color: COLORS.C, width: 6 },
@@ -146,8 +138,7 @@
     };
 
     const traceD = {
-      type: 'scatter3d',
-      mode: 'lines+markers',
+      type: 'scatter3d', mode: 'lines+markers',
       name: 'AI-offloaded',
       x: tD, y: dD, z: lD,
       line: { color: COLORS.D, width: 6, dash: 'dash' },
@@ -155,37 +146,49 @@
       hovertemplate: '<b>AI-offloaded</b><br>Time: %{x:.1f}<br>Difficulty: %{y:.2f}<br>Learning: %{z:.2f}<extra></extra>'
     };
 
-    const surface = {
-      type: 'surface',
-      name: 'Optimal-zone surface',
-      x: sT,
-      y: sD,
-      z: sL,
-      opacity: 0.55,
-      showscale: false,
-      colorscale: surfaceColorscale,
-      contours: {
-        z: { show: false }
-      },
-      hovertemplate: '<b>Optimal zone</b><br>Time: %{x:.1f}<br>Difficulty: %{y:.2f}<br>Predicted learning: %{z:.2f}<extra></extra>'
+    const ridgeMain = {
+      type: 'scatter3d', mode: 'lines',
+      name: 'Optimal challenge ridge',
+      x: tR, y: dRidge, z: lRidge,
+      line: { color: COLORS.ridge, width: 8 },
+      hovertemplate: '<b>Optimal ridge</b><br>Time: %{x:.1f}<br>Difficulty: %{y:.2f}<br>Predicted learning: %{z:.2f}<extra></extra>'
     };
 
-    return [surface, traceA, traceB, traceC, traceD];
+    const ridgeUpper = {
+      type: 'scatter3d', mode: 'lines',
+      name: 'Upper tolerance',
+      x: tR, y: dRidgeUp, z: lEdge,
+      line: { color: COLORS.ridge, width: 2, dash: 'dot' },
+      opacity: 0.55,
+      hoverinfo: 'skip'
+    };
+
+    const ridgeLower = {
+      type: 'scatter3d', mode: 'lines',
+      name: 'Lower tolerance',
+      x: tR, y: dRidgeDn, z: lEdge,
+      line: { color: COLORS.ridge, width: 2, dash: 'dot' },
+      opacity: 0.55,
+      hoverinfo: 'skip'
+    };
+
+    // Order: 0 ridgeMain, 1 ridgeUpper, 2 ridgeLower, 3 A, 4 B, 5 C, 6 D
+    return [ridgeMain, ridgeUpper, ridgeLower, traceA, traceB, traceC, traceD];
   }
 
-  // Trace order in plot: 0 surface, 1 A, 2 B, 3 C, 4 D
-  const TRACE_INDEX = { S: 0, A: 1, B: 2, C: 3, D: 4 };
+  // S toggle controls all three ridge traces
+  const TRACE_INDEX = { S: [0, 1, 2], A: [3], B: [4], C: [5], D: [6] };
 
   const DETAILS = {
     A: {
       title: 'Spaced + progressive difficulty',
       lede: 'Difficulty rises gradually as skill develops, with practice distributed over time.',
-      body: 'This is the trajectory predicted by the desirable-difficulties literature. Spacing, retrieval practice, and a steady increase in functional difficulty feel slower in the moment but produce stronger long-term retention and transfer. The curve hugs the optimal-zone surface as skill grows.'
+      body: 'This is the trajectory predicted by the desirable-difficulties literature. Spacing, retrieval practice, and a steady increase in functional difficulty feel slower in the moment but produce stronger long-term retention and transfer. The curve tracks the optimal-challenge ridge as skill grows.'
     },
     B: {
       title: 'Massed practice, low difficulty',
       lede: 'A great deal of time, very little challenge.',
-      body: 'Long study sessions at consistently low functional difficulty &mdash; rereading, copying, undemanding repetition. Performance plateaus early and stays well below the optimal surface. The spacing effect literature explains why time alone, without distribution and challenge, is a poor predictor of learning.'
+      body: 'Long study sessions at consistently low functional difficulty &mdash; rereading, copying, undemanding repetition. Performance plateaus early and stays well below the ridge. The spacing-effect literature explains why time alone, without distribution and challenge, is a poor predictor of learning.'
     },
     C: {
       title: 'Too hard, too fast',
@@ -194,26 +197,126 @@
     },
     D: {
       title: 'AI-offloaded',
-      lede: 'AI removes the effort &mdash; and most of the learning.',
-      body: 'The dashed pink trajectory shows what happens when generative tools eliminate functional difficulty rather than calibrating it. Performance during practice can look excellent, but durable learning plateaus low &mdash; the fluency illusion documented by Bjork &amp; Bjork and quantified by Bastani et al.'
+      lede: 'The task completes quickly &mdash; and most of the learning is skipped.',
+      body: 'With AI doing the cognitive work, the task is finished fast (short on the time axis) at very low functional difficulty. Performance during practice can look excellent, but durable learning plateaus low &mdash; the fluency illusion documented by Bjork &amp; Bjork and quantified by Bastani et al. The companion bar chart below makes the practice-vs-transfer gap explicit.'
     },
     S: {
-      title: 'Optimal-zone surface',
-      lede: 'The challenge point prediction.',
-      body: 'The translucent green surface marks the band where functional difficulty maximises learning for a given amount of skill-building time. As time (and therefore skill) grows, the ridge of optimal difficulty shifts upward &mdash; what was a desirable difficulty yesterday is too easy today.'
+      title: 'Optimal challenge ridge',
+      lede: 'A prediction, not a measured zone.',
+      body: 'The thick green line is the ridge of <em>predicted</em> learning under the challenge-point framework: at each moment, the level of functional difficulty that would maximise learning for a learner whose skill has grown with time. Difficulty at the optimum keeps rising &mdash; what was desirably difficult yesterday is too easy today. The dotted lines mark a tolerance band one standard-deviation wide; outside the band, learning falls off.'
     }
   };
 
   const plotEl = document.getElementById('plot');
   const detailEl = document.getElementById('trajectoryDetail');
 
-  Plotly.newPlot(plotEl, buildTraces(), buildLayout(), {
+  Plotly.newPlot(plotEl, build3DTraces(), build3DLayout(), {
     responsive: true,
     displaylogo: false,
     displayModeBar: 'hover'
   });
 
-  // Toggle visibility
+  // ---------- Companion plot 1: effort × learning ----------
+  const effortPlotEl = document.getElementById('effortPlot');
+
+  // Effort proxy per trajectory: how much cognitive work the learner expends.
+  const effortA = dA.map(d => d);                                      // full effort matches functional difficulty
+  const effortB = dB.map(d => 0.6 * d);                                // diluted, time-passing
+  const effortC = dC.map((d, i) => d * Math.max(0.3, 1 - 0.3 * Math.max(0, tC[i] - 2))); // disengages
+  const effortD = tD.map(t => 0.05 + 0.02 * t);                        // AI removes effort
+
+  function buildEffortLayout() {
+    const c = plotColors();
+    return {
+      autosize: true,
+      margin: { l: 56, r: 18, t: 12, b: 48 },
+      paper_bgcolor: c.bg,
+      plot_bgcolor: c.bg,
+      font: { family: 'Inter, sans-serif', color: c.text, size: 12 },
+      showlegend: false,
+      xaxis: {
+        title: 'Effort  →  (cognitive work expended)',
+        range: [0, 1], gridcolor: c.grid, zerolinecolor: c.zero, linecolor: c.zero,
+        tickfont: { color: c.muted }, titlefont: { color: c.text, size: 12 }
+      },
+      yaxis: {
+        title: 'Learning  →',
+        range: [0, 1], gridcolor: c.grid, zerolinecolor: c.zero, linecolor: c.zero,
+        tickfont: { color: c.muted }, titlefont: { color: c.text, size: 12 }
+      }
+    };
+  }
+
+  function buildEffortTraces() {
+    return [
+      { type: 'scatter', mode: 'lines+markers', name: 'Spaced + progressive',
+        x: effortA, y: lA, line: { color: COLORS.A, width: 3 }, marker: { size: 5, color: COLORS.A } },
+      { type: 'scatter', mode: 'lines+markers', name: 'Massed, low difficulty',
+        x: effortB, y: lB, line: { color: COLORS.B, width: 3 }, marker: { size: 5, color: COLORS.B } },
+      { type: 'scatter', mode: 'lines+markers', name: 'Too hard, too fast',
+        x: effortC, y: lC, line: { color: COLORS.C, width: 3 }, marker: { size: 5, color: COLORS.C } },
+      { type: 'scatter', mode: 'lines+markers', name: 'AI-offloaded',
+        x: effortD, y: lD, line: { color: COLORS.D, width: 3, dash: 'dash' }, marker: { size: 5, color: COLORS.D, symbol: 'diamond' } }
+    ];
+  }
+
+  Plotly.newPlot(effortPlotEl, buildEffortTraces(), buildEffortLayout(), {
+    responsive: true, displaylogo: false, displayModeBar: false
+  });
+
+  // ---------- Companion plot 2: practice vs transfer ----------
+  const transferPlotEl = document.getElementById('transferPlot');
+
+  const conditions = ['Spaced + progressive', 'Massed, low difficulty', 'Too hard, too fast', 'AI-offloaded'];
+  const practiceScores = [78, 62, 55, 95];   // illustrative; AI condition strongest in practice
+  const transferScores = [82, 50, 38, 55];   // and weakest off-task
+  const conditionColors = [COLORS.A, COLORS.B, COLORS.C, COLORS.D];
+
+  function buildTransferLayout() {
+    const c = plotColors();
+    return {
+      autosize: true,
+      barmode: 'group',
+      bargap: 0.25,
+      bargroupgap: 0.12,
+      margin: { l: 56, r: 18, t: 12, b: 78 },
+      paper_bgcolor: c.bg,
+      plot_bgcolor: c.bg,
+      font: { family: 'Inter, sans-serif', color: c.text, size: 12 },
+      legend: { orientation: 'h', y: -0.28, x: 0, font: { color: c.muted } },
+      xaxis: {
+        tickfont: { color: c.muted, size: 11 },
+        gridcolor: c.bg, linecolor: c.zero,
+        tickangle: 0
+      },
+      yaxis: {
+        title: 'Score (illustrative)',
+        range: [0, 100], gridcolor: c.grid, zerolinecolor: c.zero, linecolor: c.zero,
+        tickfont: { color: c.muted }, titlefont: { color: c.text, size: 12 }
+      }
+    };
+  }
+
+  function buildTransferTraces() {
+    return [
+      {
+        type: 'bar', name: 'During practice',
+        x: conditions, y: practiceScores,
+        marker: { color: conditionColors, opacity: 1 }
+      },
+      {
+        type: 'bar', name: 'Transfer test (without AI)',
+        x: conditions, y: transferScores,
+        marker: { color: conditionColors, opacity: 0.45, line: { color: conditionColors, width: 2 } }
+      }
+    ];
+  }
+
+  Plotly.newPlot(transferPlotEl, buildTransferTraces(), buildTransferLayout(), {
+    responsive: true, displaylogo: false, displayModeBar: false
+  });
+
+  // ---------- Toggle controls (3D plot only) ----------
   const buttons = document.querySelectorAll('.toggle');
   let activeDetail = null;
 
@@ -233,7 +336,7 @@
     detailEl.appendChild(title);
     detailEl.appendChild(lede);
     detailEl.appendChild(body);
-    detailEl.style.borderLeft = '3px solid ' + (traceKey === 'S' ? COLORS.surface : COLORS[traceKey]);
+    detailEl.style.borderLeft = '3px solid ' + (traceKey === 'S' ? COLORS.ridge : COLORS[traceKey]);
   }
 
   function clearDetail() {
@@ -244,11 +347,11 @@
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.trace;
-      const idx = TRACE_INDEX[key];
+      const indices = TRACE_INDEX[key];
       const currentlyPressed = btn.getAttribute('aria-pressed') === 'true';
       const nextPressed = !currentlyPressed;
       btn.setAttribute('aria-pressed', String(nextPressed));
-      Plotly.restyle(plotEl, { visible: nextPressed ? true : 'legendonly' }, [idx]);
+      Plotly.restyle(plotEl, { visible: nextPressed ? true : 'legendonly' }, indices);
 
       if (nextPressed) {
         activeDetail = key;
@@ -260,10 +363,14 @@
     });
   });
 
-  // React to colour-scheme changes
+  // ---------- React to colour-scheme changes ----------
   if (window.matchMedia) {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => Plotly.relayout(plotEl, buildLayout());
+    const handler = () => {
+      Plotly.relayout(plotEl, build3DLayout());
+      Plotly.relayout(effortPlotEl, buildEffortLayout());
+      Plotly.relayout(transferPlotEl, buildTransferLayout());
+    };
     if (mq.addEventListener) mq.addEventListener('change', handler);
     else if (mq.addListener) mq.addListener(handler);
   }

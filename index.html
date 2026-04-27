@@ -30,7 +30,7 @@
     </header>
 
     <section class="plot-section" aria-label="Interactive 3D plot">
-      <div id="plot" role="img" aria-label="3D plot of difficulty, time, and learning with four trajectories and an optimal-zone surface."></div>
+      <div id="plot" role="img" aria-label="3D plot of difficulty, time, and learning with four trajectories and the optimal challenge ridge."></div>
 
       <div class="controls" role="group" aria-label="Toggle trajectories">
         <button type="button" class="toggle" data-trace="A" aria-pressed="true">
@@ -49,14 +49,52 @@
           <span class="swatch swatch-dashed" style="background:#D4537E"></span>
           AI-offloaded
         </button>
-        <button type="button" class="toggle toggle-surface" data-trace="S" aria-pressed="true">
-          <span class="swatch swatch-surface"></span>
-          Optimal-zone surface
+        <button type="button" class="toggle toggle-ridge" data-trace="S" aria-pressed="true">
+          <span class="swatch swatch-ridge"></span>
+          Optimal challenge ridge
         </button>
       </div>
 
       <div class="trajectory-detail" id="trajectoryDetail" aria-live="polite">
         <p class="hint">Click a trajectory above to read the underlying theory. Click again to hide it.</p>
+      </div>
+    </section>
+
+    <section class="companion-plots" aria-label="Companion 2D views">
+      <h2>Two complementary views</h2>
+      <p class="section-lede">
+        The 3D plot makes time and difficulty explicit but leaves <em>effort</em>
+        implicit and the <em>fluency illusion</em> hard to see directly. The two
+        panels below address both.
+      </p>
+
+      <div class="companion-grid">
+        <article class="companion-card">
+          <header>
+            <h3>Effort &times; learning</h3>
+            <p class="companion-sub">
+              Each trajectory plotted as effort expended against learning gained.
+              The AI-offloaded curve sits on the far left: the lowest effort, and
+              correspondingly low learning. Spaced + progressive practice covers
+              the largest range of effort and reaches the highest learning.
+            </p>
+          </header>
+          <div id="effortPlot" class="small-plot" role="img" aria-label="2D plot of effort versus learning for the four trajectories."></div>
+        </article>
+
+        <article class="companion-card">
+          <header>
+            <h3>Practice vs. transfer</h3>
+            <p class="companion-sub">
+              Schematic comparison of performance during practice (solid bars) and on
+              a transfer test without AI support (faded bars). The AI-offloaded
+              condition is best during practice and worst on transfer &mdash; the
+              fluency illusion documented by Bjork &amp; Bjork and quantified by
+              Bastani et al. Bar heights are illustrative.
+            </p>
+          </header>
+          <div id="transferPlot" class="small-plot" role="img" aria-label="Bar chart of practice and transfer scores for each condition."></div>
+        </article>
       </div>
     </section>
 
@@ -70,14 +108,16 @@
       <div class="cards">
         <article class="card" style="--accent:#1D9E75">
           <header>
-            <span class="card-tag">Surface</span>
+            <span class="card-tag">Optimal ridge</span>
             <h3>Challenge point framework</h3>
             <p class="source">Guadagnoli &amp; Lee (2004)</p>
           </header>
           <p>
-            The optimal surface in the plot. The level of difficulty that maximises
-            learning depends on the learner's current skill. As skill grows over time,
-            the optimal difficulty must rise to maintain a productive challenge.
+            The thick green line in the 3D plot is the predicted ridge of optimal
+            challenge. The level of difficulty that maximises learning depends on the
+            learner's current skill, so the ridge tilts upward as skill (and time)
+            grows. The dotted lines mark a tolerance band; outside it, learning falls
+            off.
           </p>
           <blockquote>
             &ldquo;Practising a skill does not necessarily guarantee skill learning.&rdquo;
@@ -141,7 +181,7 @@
           <header>
             <span class="card-tag">Trajectory D</span>
             <h3>Cognitive offloading &amp; the fluency illusion</h3>
-            <p class="source">Gerlich (2025); Bastani et al. (PNAS); Bjork &amp; Bjork (2011)</p>
+            <p class="source">Gerlich (2025); Bastani et al. (2025); Bjork &amp; Bjork (2011)</p>
           </header>
           <p>
             AI tools reduce the cognitive effort of a task, which can produce an
@@ -165,7 +205,7 @@
           <p>
             Converges with the challenge point framework: optimal learning takes place
             just beyond what the student can do alone. In the plot this corresponds to
-            the narrow band around the optimal surface.
+            the narrow tolerance band around the optimal ridge.
           </p>
           <blockquote>
             AI can act as the &ldquo;more knowledgeable other&rdquo; Vygotsky described
