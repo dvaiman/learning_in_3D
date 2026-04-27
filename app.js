@@ -220,15 +220,18 @@
   const effortPlotEl = document.getElementById('effortPlot');
 
   // Effort proxies — what the learner actually expends cognitively at each point.
-  // A (spaced): high effort throughout — desirable difficulties mean every session
-  //   requires genuine retrieval under forgetting. Effort starts high and stays high.
-  const effortA = tA.map(t => 0.62 + 0.18 * (1 - Math.exp(-0.5 * t)));  // 0.62 → 0.80
+  // A (spaced): high effort throughout. Difficulty rises to match growing skill,
+  //   so subjective effort stays roughly constant — trajectory is a near-vertical
+  //   climb in (effort, learning) space.
+  const effortA = tA.map(t => 0.62 + 0.08 * (1 - Math.exp(-0.5 * t)));     // 0.62 → 0.70
   // B (massed): consistently low effort — easy repetition, no retrieval demand.
   const effortB = dB.map(d => 0.6 * d);                                    // ~0.09–0.12
-  // C (too hard): high effort early (struggling), collapses as learner disengages.
-  const effortC = dC.map((d, i) => d * Math.max(0.25, 1 - 0.35 * Math.max(0, tC[i] - 1.8)));
+  // C (too hard): maximum effort throughout — cognitive overload means the
+  //   learner is straining at capacity the whole time, which is why learning
+  //   collapses despite the effort. Sits above A's range at every point.
+  const effortC = tC.map(t => 0.95 - 0.07 * (1 - Math.exp(-0.4 * t)));     // 0.95 → 0.88
   // D (AI-offloaded): near-zero throughout — AI removes the cognitive work.
-  const effortD = tD.map(t => 0.04 + 0.02 * t);                           // 0.04–0.10
+  const effortD = tD.map(t => 0.04 + 0.02 * t);                            // 0.04–0.10
 
   function buildEffortLayout() {
     const c = plotColors();
