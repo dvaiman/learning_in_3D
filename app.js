@@ -272,10 +272,15 @@
   // ---------- Companion plot 2: practice vs transfer ----------
   const transferPlotEl = document.getElementById('transferPlot');
 
-  // Horizontal grouped bar: conditions on y-axis, score on x-axis — avoids label collision
+  // Horizontal grouped bar: conditions on y-axis, score on x-axis — avoids label collision.
+  // Values are illustrative but each gap encodes a specific theoretical prediction:
+  //   AI-offloaded         → −40   fluency illusion (Bastani; Bjork & Bjork)
+  //   Massed, low diff.    → −28   spacing effect violated
+  //   Too hard, too fast   → −15   cognitive overload (both bars low)
+  //   Spaced + progressive → +12   desirable difficulties (only positive gap)
   const conditions = ['AI-offloaded', 'Too hard, too fast', 'Massed, low difficulty', 'Spaced + progressive'];
-  const practiceScores = [95, 55, 62, 78];
-  const transferScores = [55, 38, 50, 82];
+  const practiceScores = [95, 45, 78, 70];
+  const transferScores = [55, 30, 50, 82];
   const conditionColors = [COLORS.D, COLORS.C, COLORS.B, COLORS.A];
 
   function buildTransferLayout() {

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=4" />
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 </head>
 <body>
@@ -86,12 +86,15 @@
           <header>
             <h3>Practice vs. transfer</h3>
             <p class="companion-sub">
-              Each condition is shown twice: solid bar = score during practice;
-              faded bar = score on a later transfer test without AI support.
-              A large drop between the two bars signals a fluency illusion &mdash;
-              performance felt good but little durable learning occurred.
-              The AI-offloaded condition has the largest gap. Bar heights are
-              illustrative and schematic, not empirical data.
+              Solid bar = score during practice; faded bar = score on a later
+              transfer test without AI support. Each gap encodes a specific
+              theoretical prediction: <em>AI-offloaded</em> shows the largest
+              drop (fluency illusion); <em>massed, low difficulty</em> shows a
+              moderate drop (spacing effect violated); <em>too hard, too fast</em>
+              stays low on both bars (cognitive overload); <em>spaced +
+              progressive</em> is the only condition where transfer
+              <em>exceeds</em> practice &mdash; the signature of desirable
+              difficulties. Bar heights are schematic, not empirical data.
             </p>
           </header>
           <div id="transferPlot" class="small-plot" role="img" aria-label="Bar chart of practice and transfer scores for each condition."></div>
@@ -237,6 +240,6 @@
     </footer>
   </main>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
